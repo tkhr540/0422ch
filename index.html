@@ -1,479 +1,198 @@
-<!DOCTYPE html>  <html lang="ja">  
-<head>  
-<meta charset="utf-8" />  
-<meta name="viewport" content="width=device-width,initial-scale=1" />  
-  <meta name="google-site-verification" content="NJ3ZzSV5BrGqR09JvoydRajkW1h82XD_W5vvrSn8s7o" />  
-<title>0422ch   なんでもアリ・匿名の自由</title>  
-<style>  
-  /* ベース */  
-  :root{ --max-width:900px; --accent:#0044cc; --admin:#ffb300; --muted:#666; }  
-  body { font-family: "MS PGothic", "Arial", sans-serif; background:#eef2f5; margin:0; padding:12px; color:#222; }  
-  #board { max-width:var(--max-width); margin:0 auto; background:#fff; border:1px solid #ccc; padding:14px; position:relative; box-shadow:0 2px 6px rgba(0,0,0,0.03); }  
-  h1 { text-align:center; border-bottom:2px solid #ddd; padding-bottom:8px; margin:0 0 12px 0; font-size:20px; }  /* 管理リンク */
-#adminLink { position:absolute; top:12px; right:14px; font-size:14px; color:#0077cc; cursor:pointer; display:inline-block; }
-#adminLink:hover { text-decoration:underline; }
-
-/* 管理バー */
-#adminPanel { display:none; background:linear-gradient(90deg,#ffd54a,#ffc107); border:1px solid #b37b00; padding:8px; margin-bottom:10px; text-align:center; font-weight:bold; }
-#adminPanel button { margin-left:8px; padding:4px 8px; }
-
-/* レイアウト */
-#threadList, #threadView { margin-top:8px; }
-#threads { margin-top:8px; }
-
-.thread { border-top:1px solid #e0e0e0; padding:10px; display:flex; flex-direction:column; gap:6px; }
-.thread:first-child { border-top:none; }
-.threadRow { display:flex; justify-content:space-between; align-items:center; gap:12px; }
-.title { font-weight:bold; color:var(--accent); font-size:15px; }
-.small { font-size:12px; color:var(--muted); }
-
-.actions { margin-top:6px; }
-.actions button { margin-right:6px; padding:5px 8px; font-size:13px; }
-
-/* スレ詳細 */
-#posts { max-height:60vh; overflow:auto; margin-top:8px; padding-right:6px; }
-.post { border-bottom:1px dotted #ddd; padding:8px 6px; white-space:pre-wrap; display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
-.postInfo { flex:1; }
-.metaRow { font-size:12px; color:var(--muted); margin-bottom:6px; }
-.adminName { color:#d00; font-weight:bold; margin-right:6px; }
-
-/* 注意書き */
-.notice { background:#fff8e1; border-left:4px solid var(--admin); padding:10px; font-size:13px; margin:8px 0; color:#333; }
-
-/* 入力 */
-input, textarea { width:100%; box-sizing:border-box; padding:8px; margin:6px 0; font-family:inherit; font-size:14px; border:1px solid #ccc; border-radius:4px; }
-button { cursor:pointer; background:#fff; border:1px solid #ccc; border-radius:4px; }
-button.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
-
-/* バッジ等 */
-.badge { font-size:12px; color:#b33; margin-left:8px; background:transparent; padding:2px 6px; border-radius:4px; }
-.pinned { background:#fff8e1; }
-.admin-thread { background:linear-gradient(90deg,#fff3cd,#ffecb3); border-left:4px solid #ffb300; padding-left:8px; }
-
-/* 小さいボタン */
-.smallBtn { font-size:12px; padding:3px 6px; margin-left:6px; }
-
-/* レスポンシブ */
-@media (max-width:640px) {
-:root{ --max-width:100%; }
-.threadRow { flex-direction:column; align-items:flex-start; }
-#board { padding:10px; }
-h1 { font-size:18px; }
-}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>0422ch　なんでもアリ・匿名の自由</title>
+<meta name="description" content="0422chは、匿名でなんでも書ける自由掲示板。登録不要・即スレ立て・誰でも参加OK！">
+<meta name="google-site-verification" content="NJ3ZzSV5BrGqR09JvoydRajkW1h82XD_W5vvrSn8s7o" />
+<style>
+  :root{ --max-width:900px; --accent:#0044cc; --admin:#ffb300; --muted:#666; }
+  body { font-family:"MS PGothic",Arial,sans-serif; background:#eef2f5; margin:0; padding:12px; color:#222; }
+  #board { max-width:var(--max-width); margin:0 auto; background:#fff; border:1px solid #ccc; padding:14px; position:relative; box-shadow:0 2px 6px rgba(0,0,0,0.03); }
+  h1 { text-align:center; border-bottom:2px solid #ddd; padding-bottom:8px; margin:0 0 12px 0; }
+  #logo { max-width: 100%; height: auto; }
+  #adminLink { position:absolute; top:12px; right:14px; font-size:14px; color:#0077cc; cursor:pointer; display:inline-block; }
+  #adminLink:hover { text-decoration:underline; }
+  #adminPanel { display:none; background:linear-gradient(90deg,#ffd54a,#ffc107); border:1px solid #b37b00; padding:8px; margin-bottom:10px; text-align:center; font-weight:bold; }
+  #adminPanel button { margin-left:8px; padding:4px 8px; }
+  #threadList, #threadView { margin-top:8px; }
+  .thread { border-top:1px solid #e0e0e0; padding:10px; }
+  .thread:first-child { border-top:none; }
+  .title { font-weight:bold; color:var(--accent); font-size:15px; }
+  .small { font-size:12px; color:var(--muted); }
+  #posts { max-height:60vh; overflow:auto; margin-top:8px; padding-right:6px; }
+  .post { border-bottom:1px dotted #ddd; padding:8px 6px; white-space:pre-wrap; }
+  .notice { background:#fff8e1; border-left:4px solid var(--admin); padding:10px; font-size:13px; margin:8px 0; color:#333; }
+  input, textarea { width:100%; box-sizing:border-box; padding:8px; margin:6px 0; font-family:inherit; font-size:14px; border:1px solid #ccc; border-radius:4px; }
+  button { cursor:pointer; background:#fff; border:1px solid #ccc; border-radius:4px; }
+  button.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+  @media (max-width:640px){ :root{ --max-width:100%; } h1{font-size:18px;} #board{padding:10px;} }
 </style>
+</head>
+<body>
+<div id="board">
+  <span id="adminLink">👑 管理ログイン</span>
+  <h1><img src="logo.png" alt="0422chロゴ" id="logo"></h1>
 
-</head>  
-<body>  
-<div id="board">  
-  <span id="adminLink">👑 管理ログイン</span>  
-  <h1>
-  <img src="logo.png" alt="0422ch   なんでもアリ・匿名の自由" style="max-height:120px;">
-</h1>    <!-- 管理バー（ログイン時表示） -->    <div id="adminPanel">  
-    👑 管理者モード有効中  
-    <button id="adminLogoutBtn">ログアウト</button>  
-    <button id="purgeOldThreadsBtn" title="一般スレの古いスレを今すぐ削除">古いスレ一括削除</button>  
-  </div>    <!-- スレ一覧 -->    <div id="threadList">  
-    <h3>スレッド一覧</h3>  
-    <div id="threads">読み込み中...</div>  <h3>新しいスレッドを作成</h3>  
-<input id="newName" placeholder="名前（空欄→名無しさん）">  
-<input id="newTitle" placeholder="スレッドタイトル">  
-<textarea id="newMessage" rows="4" placeholder="本文"></textarea>  
-<input id="newPassword" placeholder="削除パスワード（任意）">  
+  <div id="adminPanel">
+    👑 管理者モード有効中
+    <button id="adminLogoutBtn">ログアウト</button>
+  </div>
 
-<div id="adminOptions" style="display:none;">  
-  <label><input type="checkbox" id="newAnnouncement"> 告知（管理専用）</label>  
-  <label style="margin-left:10px;"><input type="checkbox" id="newPinned"> 固定（管理専用）</label>  
-</div>  
+  <div id="threadList">
+    <h3>スレッド一覧</h3>
+    <div id="threads">読み込み中...</div>
 
-<button id="createBtn" class="primary">スレ立て</button>
+    <h3>新しいスレッドを作成</h3>
+    <input id="newName" placeholder="名前（空欄→名無しさん）">
+    <input id="newTitle" placeholder="スレッドタイトル">
+    <textarea id="newMessage" rows="4" placeholder="本文"></textarea>
+    <button id="createBtn" class="primary">スレ立て</button>
+  </div>
 
-  </div>    <!-- スレ詳細 -->    <div id="threadView" style="display:none;">  
-    <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">  
-      <button id="backBtn">← 戻る</button>  
-      <div style="text-align:right;">  
-        <span id="threadCount" class="small"></span>  
-      </div>  
-    </div>  <h3 id="threadTitle"></h3>  
-<div id="threadMeta" class="small"></div>  
-
-<!-- 注意書き -->  
-<div class="notice">💬 このスレでは古い返信は自動的に削除されます（最大50件まで保持）</div>  
-
-<div id="posts"></div>  
-
-<div id="replyArea" style="margin-top:8px;">  
-  <input id="replyName" placeholder="名前（空欄→名無しさん）">  
-  <textarea id="replyMsg" rows="3" placeholder="返信内容"></textarea>  
-  <div style="display:flex; gap:8px;">  
-    <button id="replyBtn" class="primary">返信</button>  
-    <button id="deleteThreadBtn" style="background:#f88;border-color:#c00;">スレ削除</button>  
-  </div>  
+  <div id="threadView" style="display:none;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <button id="backBtn">← 戻る</button>
+      <div id="threadCount" class="small"></div>
+    </div>
+    <h3 id="threadTitle"></h3>
+    <div id="threadMeta" class="small"></div>
+    <div class="notice">💬 このスレでは古い返信は自動的に削除されます（最大50件まで保持）</div>
+    <div id="posts"></div>
+    <div style="margin-top:8px;">
+      <input id="replyName" placeholder="名前（空欄→名無しさん）">
+      <textarea id="replyMsg" rows="3" placeholder="返信内容"></textarea>
+      <button id="replyBtn" class="primary">返信</button>
+    </div>
+  </div>
 </div>
 
-  </div>  
-</div>  <!-- 管理モーダル -->  <div id="adminModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); align-items:center; justify-content:center;">  
-  <div style="background:#fff; padding:18px; border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,0.2); width:320px; margin:auto;">  
-    <h3 style="margin-top:0">👑 管理者ログイン</h3>  
-    <input type="password" id="adminPass" placeholder="パスワード">  
-    <div style="margin-top:8px; display:flex; gap:8px; justify-content:flex-end;">  
-      <button id="adminLoginBtn" class="primary">ログイン</button>  
-      <button id="adminCancelBtn">閉じる</button>  
-    </div>  
-    <p style="font-size:12px; color:#666; margin-top:10px;">※ 管理パスワードはクライアント埋め込みです。将来的にCloud Functions+Auth等で安全化を推奨。</p>  
-  </div>  
-</div>  <script type="module">  
-/* ------------------------------------------------------------  
-   Firebase 初期化（そのまま使用する）  
-   ------------------------------------------------------------ */  
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";  
-import { getDatabase, ref, push, set, get, onValue, child, remove, update } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";  
-  
-const firebaseConfig = {  
-  apiKey: "AIzaSyBS-ojdZt5oGvE1Ih11eTuFz3gqD9ZFS_w",  
-  authDomain: "realtime-bbs-7c080.firebaseapp.com",  
-  databaseURL: "https://realtime-bbs-7c080-default-rtdb.firebaseio.com",  
-  projectId: "realtime-bbs-7c080",  
-  storageBucket: "realtime-bbs-7c080.firebasestorage.app",  
-  messagingSenderId: "474695858997",  
-  appId: "1:474695858997:web:2a43ba238ae2b606aa6a7c"  
-};  
-  
-const ADMIN_PASSWORD = "tkhr0026"; // 将来的にはサーバで管理してください  
-const app = initializeApp(firebaseConfig);  
-const db = getDatabase(app);  
-const threadsRef = ref(db, "threads");  
-  
-const WEEK_MS = 7 * 24 * 60 * 60 * 1000;  
-const MAX_REPLIES = 50;  
-  
-let isAdmin = false;  
-let currentThreadId = null;  
-let replyCooldown = false; // 簡易な連投防止  
-  
-/* ヘルパー */  
-function fmtTime(ts){ return new Date(ts).toLocaleString(); }  
-function now(){ return Date.now(); }  
-function encodePass(p){ return p ? btoa(p) : null; }  
-function escapeHtml(str){  
-  if(str === null || str === undefined) return "";  
-  return String(str).replace(/[&<>"']/g, s => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[s]));  
-}  
-function parseTimeValue(timeStr, createdAt){  
-  const t = Date.parse(timeStr);  
-  if(!isNaN(t)) return t;  
-  if(createdAt) return createdAt;  
-  return Date.now();  
-}  
-  
-/* -------------------------  
-   自動古いスレ削除（1週間）とボタン  
-   ------------------------- */  
-async function deleteOldThreads() {  
-  const snap = await get(threadsRef);  
-  if (!snap.exists()) return;  
-  const nowTs = now();  
-  snap.forEach(childSnap => {  
-    const t = childSnap.val();  
-    if (!t || !t.createdAt) return;  
-    if (t.createdByAdmin) return; // 管理スレは飛ばす  
-    if (nowTs - t.createdAt > WEEK_MS) {  
-      remove(child(threadsRef, childSnap.key));  
-    }  
-  });  
-}  
-deleteOldThreads();  
-setInterval(deleteOldThreads, 60*60*1000); // 1時間ごと  
-  
-document.getElementById("purgeOldThreadsBtn").onclick = async () => {  
-  if(!isAdmin) return alert("管理者のみ実行できます。");  
-  if(!confirm("一般スレのうち1週間以上経過したスレを今すぐ削除しますか？")) return;  
-  await deleteOldThreads();  
-  alert("削除処理を実行しました。");  
-};  
-  
-/* -------------------------  
-   スレ一覧のリアルタイム表示（返信数表示含む）  
-   ------------------------- */  
-onValue(threadsRef, snap => {  
-  const data = snap.val() || {};  
-  const arr = Object.entries(data).map(([id,t])=>({id, ...t}));  
-  arr.sort((a,b)=>{  
-    const pa = a.pinned?1:0, pb = b.pinned?1:0;  
-    if(pa !== pb) return pb - pa;  
-    return b.createdAt - a.createdAt;  
-  });  
-  renderThreads(arr);  
-});  
-  
-function renderThreads(list){  
-  const div = document.getElementById("threads");  
-  div.innerHTML = "";  
-  if(list.length === 0){  
-    div.innerHTML = "<div class='small'>スレッドがまだありません。</div>";  
-    return;  
-  }  
-  list.forEach(t=>{  
-    const replyCount = t.posts ? Object.keys(t.posts).length : 0;  
-    const remainDays = Math.max(0, 7 - Math.floor((now() - t.createdAt)/86400000));  
-    const d = document.createElement("div");  
-    d.className = "thread" + (t.createdByAdmin ? " admin-thread" : "") + (t.pinned ? " pinned" : "");  
-    d.innerHTML = `  
-      <div class="threadRow">  
-        <div>  
-          <div class="title">${t.createdByAdmin ? "【管理スレ】 " : ""}${escapeHtml(t.title)}  
-            ${t.announcement ? "<span class='badge'>[告知]</span>" : ""}  
-            ${t.pinned ? "<span class='badge'>[固定]</span>" : ""}  
-          </div>  
-          <div class="small">作成: ${fmtTime(t.createdAt)} ${t.createdByAdmin ? "(管理スレ 永続)" : "/ 残り " + remainDays + " 日"}</div>  
-        </div>  
-        <div style="text-align:right;">  
-          <div class="small">返信数: ${replyCount}</div>  
-          <div style="margin-top:6px;">  
-            <button onclick="openThread('${t.id}')">開く</button>  
-            <button onclick="deleteThread('${t.id}')">削除</button>  
-          </div>  
-        </div>  
-      </div>  
-    `;  
-    div.appendChild(d);  
-  });  
-}  
-  
-/* -------------------------  
-   スレ立て  
-   ------------------------- */  
-document.getElementById("createBtn").onclick = async () => {  
-  const name = document.getElementById("newName").value.trim() || "名無しさん";  
-  const title = document.getElementById("newTitle").value.trim();  
-  const msg = document.getElementById("newMessage").value.trim();  
-  const pass = document.getElementById("newPassword").value.trim();  
-  const ann = document.getElementById("newAnnouncement").checked;  
-  const pin = document.getElementById("newPinned").checked;  
-  if(!title || !msg) return alert("タイトルと本文を入力してください。");  
-  const nowTs = now();  
-  const refThread = push(threadsRef);  
-  await set(refThread, {  
-    title,  
-    createdAt: nowTs,  
-    password: pass ? encodePass(pass) : null,  
-    announcement: isAdmin && ann ? true : null,  
-    pinned: isAdmin && pin ? true : null,  
-    createdByAdmin: isAdmin ? true : null  
-  });  
-  const postsRef = child(threadsRef, `${refThread.key}/posts`);  
-  await push(postsRef, {  
-    name,  
-    message: msg,  
-    time: fmtTime(nowTs),  
-    createdAt: nowTs,  
-    admin: isAdmin ? true : null  
-  });  
-  // クリア  
-  document.getElementById("newTitle").value = "";  
-  document.getElementById("newMessage").value = "";  
-  document.getElementById("newPassword").value = "";  
-  document.getElementById("newName").value = "";  
-  document.getElementById("newAnnouncement").checked = false;  
-  document.getElementById("newPinned").checked = false;  
-};  
-  
-/* -------------------------  
-   スレ開く（posts をリアルタイム監視、レス個別削除ボタン有）  
-   ------------------------- */  
-window.openThread = async id => {  
-  const snap = await get(child(threadsRef, id));  
-  if(!snap.exists()) return alert("スレッドが見つかりません。");  
-  const t = snap.val();  
-  currentThreadId = id;  
-  document.getElementById("threadList").style.display = "none";  
-  document.getElementById("threadView").style.display = "block";  
-  document.getElementById("threadTitle").textContent = t.createdByAdmin ? "【管理スレ】 " + t.title : t.title;  
-  document.getElementById("threadMeta").textContent = `作成: ${fmtTime(t.createdAt)}`;  
-  updateThreadCountDisplay();  
-  
-  const postsDiv = document.getElementById("posts");  
-  onValue(child(threadsRef, `${id}/posts`), snap => {  
-    postsDiv.innerHTML = "";  
-    const val = snap.val() || {};  
-    // entries with keys so we can delete individual posts  
-    const items = Object.entries(val).map(([k,v]) => ({ key:k, v }));  
-    // sort by createdAt if available  
-    items.sort((a,b) => {  
-      const ta = a.v.createdAt ? a.v.createdAt : parseTimeValue(a.v.time);  
-      const tb = b.v.createdAt ? b.v.createdAt : parseTimeValue(b.v.time);  
-      return ta - tb;  
-    });  
-    items.forEach((item, idx) => {  
-      const p = item.v;  
-      const postEl = document.createElement("div");  
-      postEl.className = "post";  
-      const left = document.createElement("div");  
-      left.className = "postInfo";  
-      const nameHtml = `<span class="${p.admin ? 'adminName' : ''}">${escapeHtml(p.name)}</span>`;  
-      const metaText = `<span class="small">${escapeHtml(p.time || "")}</span>`;  
-      left.innerHTML = `<div class="metaRow"><b>${idx+1}:</b> ${nameHtml} ${p.admin ? "<span style='color:#a00;font-weight:bold;'>◆管理人</span>" : ""} ${metaText}</div>  
-                        <div>${escapeHtml(p.message)}</div>`;  
-      const right = document.createElement("div");  
-      right.style.whiteSpace = "nowrap";  
-      // 管理者なら個別レス削除ボタンを出す  
-      if(isAdmin){  
-        const delBtn = document.createElement("button");  
-        delBtn.className = "smallBtn";  
-        delBtn.textContent = "削除";  
-        delBtn.onclick = async () => {  
-          if(!confirm("このレスを削除しますか？")) return;  
-          await remove(child(child(threadsRef, `${currentThreadId}/posts`), item.key));  
-        };  
-        right.appendChild(delBtn);  
-      }  
-      postEl.appendChild(left);  
-      postEl.appendChild(right);  
-      postsDiv.appendChild(postEl);  
-    });  
-    updateThreadCountDisplay();  
-    postsDiv.scrollTop = postsDiv.scrollHeight;  
-  });  
-};  
-  
-function updateThreadCountDisplay(){  
-  if(!currentThreadId) return;  
-  get(child(threadsRef, currentThreadId)).then(snap=>{  
-    if(!snap.exists()) return;  
-    const t = snap.val();  
-    const cnt = t.posts ? Object.keys(t.posts).length : 0;  
-    document.getElementById("threadCount").textContent = `返信数: ${cnt}`;  
-  });  
-}  
-  
-/* -------------------------  
-   古い返信トリム（最大 MAX_REPLIES 件を保持）  
-   ------------------------- */  
-async function trimOldReplies(threadId){  
-  const postsRef = child(threadsRef, `${threadId}/posts`);  
-  const snap = await get(postsRef);  
-  if(!snap.exists()) return;  
-  const postsObj = snap.val();  
-  const entries = Object.entries(postsObj); // [ [key, val], ... ]  
-  if(entries.length <= MAX_REPLIES) return;  
-  // sort by createdAt if present, else by time string  
-  entries.sort((a,b)=>{  
-    const ta = a[1].createdAt ? a[1].createdAt : parseTimeValue(a[1].time);  
-    const tb = b[1].createdAt ? b[1].createdAt : parseTimeValue(b[1].time);  
-    return ta - tb;  
-  });  
-  const over = entries.length - MAX_REPLIES;  
-  const old = entries.slice(0, over);  
-  for(const [key] of old){  
-    await remove(child(postsRef, key));  
-  }  
-}  
-  
-/* -------------------------  
-   返信送信（簡易連投防止、送信後トリム）  
-   ------------------------- */  
-document.getElementById("replyBtn").onclick = async () => {  
-  if(!currentThreadId) return alert("スレッドを選んでください。");  
-  if(replyCooldown) return alert("連続投稿の防止のため、少し待ってください。");  
-  const name = document.getElementById("replyName").value.trim() || "名無しさん";  
-  const msg = document.getElementById("replyMsg").value.trim();  
-  if(!msg) return alert("返信内容を入力してください。");  
-  replyCooldown = true;  
-  setTimeout(()=> replyCooldown = false, 1500); // 1.5秒の簡易クールダウン  
-  const postsRef = child(threadsRef, `${currentThreadId}/posts`);  
-  const ts = now();  
-  await push(postsRef, {  
-    name,  
-    message: msg,  
-    time: fmtTime(ts),  
-    createdAt: ts,  
-    admin: isAdmin ? true : null  
-  });  
-  document.getElementById("replyMsg").value = "";  
-  await trimOldReplies(currentThreadId);  
-  updateThreadCountDisplay();  
-};  
-  
-/* -------------------------  
-   スレ削除（管理者 or パスワード）  
-   ------------------------- */  
-window.deleteThread = async id => {  
-  const snap = await get(child(threadsRef, id));  
-  if(!snap.exists()) return alert("スレッドが見つかりません。");  
-  const t = snap.val();  
-  if(isAdmin){  
-    if(confirm("管理者としてスレを削除しますか？")) await remove(child(threadsRef, id));  
-    return;  
-  }  
-  if(!t.password){  
-    if(confirm("スレを削除しますか？")) await remove(child(threadsRef, id));  
-  } else {  
-    const pw = prompt("削除パスワード：");  
-    if(encodePass(pw) === t.password){  
-      await remove(child(threadsRef, id));  
-    } else {  
-      alert("パスワードが違います。");  
-    }  
-  }  
-};  
-  
-/* -------------------------  
-   管理ログイン / ログアウト / UI制御  
-   ------------------------- */  
-const adminLink = document.getElementById("adminLink");  
-const adminModal = document.getElementById("adminModal");  
-const adminPanel = document.getElementById("adminPanel");  
-const adminOptions = document.getElementById("adminOptions");  
-const adminLogoutBtn = document.getElementById("adminLogoutBtn");  
-  
-adminLink.onclick = () => {  
-  document.getElementById("adminModal").style.display = "flex";  
-  document.getElementById("adminPass").value = "";  
-  document.getElementById("adminPass").focus();  
-};  
-document.getElementById("adminCancelBtn").onclick = () => { document.getElementById("adminModal").style.display = "none"; };  
-  
-document.getElementById("adminLoginBtn").onclick = () => {  
-  const pw = document.getElementById("adminPass").value;  
-  if(pw === ADMIN_PASSWORD){  
-    isAdmin = true;  
-    localStorage.setItem("isAdmin0422ch", "true");  
-    document.getElementById("adminModal").style.display = "none";  
-    adminPanel.style.display = "block";  
-    adminLink.style.display = "none";  
-    adminOptions.style.display = "block";  
-    alert("管理者としてログインしました。");  
-  } else {  
-    alert("パスワードが違います。");  
-  }  
-};  
-  
-adminLogoutBtn.onclick = () => {  
-  if(!confirm("ログアウトしますか？")) return;  
-  isAdmin = false;  
-  localStorage.removeItem("isAdmin0422ch");  
-  adminPanel.style.display = "none";  
-  adminLink.style.display = "inline-block";  
-  adminOptions.style.display = "none";  
-  alert("ログアウトしました。");  
-};  
-  
-/* ページ読み込み時に管理状態を復元 */  
-if(localStorage.getItem("isAdmin0422ch") === "true"){  
-  isAdmin = true;  
-  adminPanel.style.display = "block";  
-  adminLink.style.display = "none";  
-  adminOptions.style.display = "block";  
-}  
-  
-/* 戻るボタン */  
-document.getElementById("backBtn").onclick = () => {  
-  document.getElementById("threadView").style.display = "none";  
-  document.getElementById("threadList").style.display = "block";  
-  currentThreadId = null;  
-  document.getElementById("posts").innerHTML = "";  
-  updateThreadCountDisplay();  
-};  
-  
-/* 初期表示：空スレ用の表示は renderThreads が行う */  
-</script>  </body>  
-</html>  
+<!-- 管理モーダル -->
+<div id="adminModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); align-items:center; justify-content:center;">
+  <div style="background:#fff; padding:18px; border-radius:8px; width:320px;">
+    <h3>👑 管理者ログイン</h3>
+    <input type="email" id="adminEmail" placeholder="メールアドレス">
+    <input type="password" id="adminPass" placeholder="パスワード">
+    <div style="text-align:right;margin-top:8px;">
+      <button id="adminLoginBtn" class="primary">ログイン</button>
+      <button id="adminCancelBtn">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { getDatabase, ref, push, set, get, onValue, child, remove } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBS-ojdZt5oGvE1Ih11eTuFz3gqD9ZFS_w",
+  authDomain: "realtime-bbs-7c080.firebaseapp.com",
+  databaseURL: "https://realtime-bbs-7c080-default-rtdb.firebaseio.com",
+  projectId: "realtime-bbs-7c080",
+  storageBucket: "realtime-bbs-7c080.firebasestorage.app",
+  messagingSenderId: "474695858997",
+  appId: "1:474695858997:web:2a43ba238ae2b606aa6a7c"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+const threadsRef = ref(db, "threads");
+const MAX_REPLIES = 50;
+let isAdmin = false;
+let currentThreadId = null;
+
+function fmtTime(ts){ return new Date(ts).toLocaleString(); }
+function now(){ return Date.now(); }
+function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;","\">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));}
+
+// ---------- スレ一覧 ----------
+onValue(threadsRef, snap => {
+  const data = snap.val() || {};
+  const arr = Object.entries(data).map(([id,t])=>({id,...t})).sort((a,b)=>b.createdAt-a.createdAt);
+  const div = document.getElementById("threads");
+  div.innerHTML = "";
+  arr.forEach(t=>{
+    const replyCount = t.posts ? Object.keys(t.posts).length : 0;
+    const el = document.createElement("div");
+    el.className="thread";
+    el.innerHTML = `<div class='title' onclick="openThread('${t.id}')">${escapeHtml(t.title)}</div>
+                    <div class='small'>${fmtTime(t.createdAt)} / 返信${replyCount}件</div>`;
+    div.appendChild(el);
+  });
+});
+
+// ---------- スレ作成 ----------
+document.getElementById("createBtn").onclick = async ()=>{
+  const name = document.getElementById("newName").value.trim() || "名無しさん";
+  const title = document.getElementById("newTitle").value.trim();
+  const msg = document.getElementById("newMessage").value.trim();
+  if(!title||!msg) return alert("タイトルと本文を入力してください。");
+  const nowTs = now();
+  const refThread = push(threadsRef);
+  await set(refThread,{ title, createdAt:nowTs });
+  await push(child(threadsRef,`${refThread.key}/posts`),{ name,message:msg,time:fmtTime(nowTs),createdAt:nowTs });
+  document.getElementById("newTitle").value="";
+  document.getElementById("newMessage").value="";
+};
+
+// ---------- スレ開く ----------
+window.openThread = async id=>{
+  currentThreadId = id;
+  document.getElementById("threadList").style.display="none";
+  document.getElementById("threadView").style.display="block";
+  const postsRef = child(threadsRef,`${id}/posts`);
+  onValue(postsRef,snap=>{
+    const postsDiv=document.getElementById("posts");
+    postsDiv.innerHTML="";
+    const val=snap.val()||{};
+    const items=Object.values(val).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+    items.forEach((p,idx)=>{
+      const div=document.createElement("div");
+      div.className="post";
+      div.innerHTML=`<b>${idx+1}:</b> ${escapeHtml(p.name)}<br>${escapeHtml(p.message)}<div class='small'>${p.time}</div>`;
+      postsDiv.appendChild(div);
+    });
+  });
+};
+
+// ---------- 返信 ----------
+document.getElementById("replyBtn").onclick = async ()=>{
+  const msg=document.getElementById("replyMsg").value.trim();
+  if(!msg) return;
+  const name=document.getElementById("replyName").value.trim()||"名無しさん";
+  const ts=now();
+  const postsRef=child(threadsRef,`${currentThreadId}/posts`);
+  await push(postsRef,{name,message:msg,time:fmtTime(ts),createdAt:ts});
+  document.getElementById("replyMsg").value="";
+};
+
+// ---------- 管理ログイン ----------
+const modal=document.getElementById("adminModal");
+document.getElementById("adminLink").onclick=()=>{modal.style.display="flex";};
+document.getElementById("adminCancelBtn").onclick=()=>{modal.style.display="none";};
+document.getElementById("adminLoginBtn").onclick=async()=>{
+  const email=document.getElementById("adminEmail").value.trim();
+  const pw=document.getElementById("adminPass").value.trim();
+  try{
+    await signInWithEmailAndPassword(auth,email,pw);
+    alert("管理者としてログインしました。");
+    modal.style.display="none";
+  }catch(e){alert("ログインに失敗しました。");}
+};
+document.getElementById("adminLogoutBtn").onclick=async()=>{await signOut(auth);alert("ログアウトしました。");};
+onAuthStateChanged(auth,user=>{
+  isAdmin=!!user;
+  document.getElementById("adminPanel").style.display=isAdmin?"block":"none";
+  document.getElementById("adminLink").style.display=isAdmin?"none":"inline-block";
+});
+document.getElementById("backBtn").onclick=()=>{
+  document.getElementById("threadView").style.display="none";
+  document.getElementById("threadList").style.display="block";
+};
+</script>
+</body>
+</html>
