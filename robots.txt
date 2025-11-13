@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://tkhr540.github.io/0422ch/sitemap.xml

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0044cc">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("sw.js").then(() => {
+        console.log("✅ Service Worker registered");
+      });
+    });
+  }
+</script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>0422ch なんでもアリ・匿名の自由</title>
+<meta name="google-site-verification" content="NJ3ZzSV5BrGqR09JvoydRajkW1h82XD_W5vvrSn8s7o" />
+<style>
+:root{ --max-width:900px; --accent:#0044cc; --admin:#ffb300; --muted:#666; }
+body { font-family:"MS PGothic",Arial,sans-serif; background:#eef2f5; margin:0; padding:12px; color:#222; }
+#board { max-width:var(--max-width); margin:0 auto; background:#fff; border:1px solid #ccc; padding:14px; position:relative; box-shadow:0 2px 6px rgba(0,0,0,0.03); }
+
+h1 { text-align:center; border-bottom:2px solid #ddd; padding-bottom:8px; margin:0 0 12px 0; }
+h1 img { max-width:30%; height:auto; }
+
+#adminLink { position:absolute; top:12px; right:14px; font-size:14px; color:#0077cc; cursor:pointer; display:inline-block; }
+#adminLink:hover { text-decoration:underline; }
+
+#adminPanel { display:none; background:linear-gradient(90deg,#ffd54a,#ffc107); border:1px solid #b37b00; padding:8px; margin-bottom:10px; text-align:center; font-weight:bold; }
+#adminPanel button { margin-left:8px; padding:4px 8px; }
+
+.thread { border-top:1px solid #e0e0e0; padding:10px; display:flex; justify-content:space-between; align-items:center; }
+.thread:first-child { border-top:none; }
+.thread.admin-thread { background:linear-gradient(90deg,#fff3cd,#ffecb3); border-left:4px solid #ffb300; padding-left:8px; }
+.thread.pinned { background:#f4faff; border-left:4px solid #0044cc; }
+
+.title { font-weight:bold; color:var(--accent); font-size:15px; cursor:pointer; }
+.small { font-size:12px; color:var(--muted); }
+
+#posts { max-height:60vh; overflow:auto; margin-top:8px; padding-right:6px; }
+.post { border-bottom:1px dotted #ddd; padding:8px 6px; white-space:pre-wrap; display:flex; justify-content:space-between; }
+.post .adminName { color:#d00; font-weight:bold; }
+
+.notice { background:#fff8e1; border-left:4px solid var(--admin); padding:10px; font-size:13px; margin:8px 0; color:#333; }
+
+input, textarea { width:100%; box-sizing:border-box; padding:8px; margin:6px 0; font-family:inherit; font-size:14px; border:1px solid #ccc; border-radius:4px; }
+button { cursor:pointer; background:#fff; border:1px solid #ccc; border-radius:4px; }
+button.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+.smallBtn { font-size:12px; padding:3px 6px; margin-left:6px; }
+
+@media (max-width:640px){ :root{--max-width:100%;} #board{padding:10px;} h1{font-size:18px;} }
+</style>
+</head>
+<body>
+<div id="board">
+  <span id="adminLink">👑 管理ログイン</span>
+  <h1><img src="logo.png" alt="0422chロゴ"></h1>
+
+  <div id="adminPanel">
+    👑 管理者モード有効中
+    <button id="adminLogoutBtn">ログアウト</button>
+    <button id="purgeBtn">古いスレ一括削除</button>
+  </div>
+
+  <!-- スレ一覧 -->
+  <div id="threadList">
+    <h3>スレッド一覧</h3>
+    <div id="threads">読み込み中...</div>
+
+    <h3>新しいスレッドを作成</h3>
+    <input id="newName" placeholder="名前（空欄→名無しさん）">
+    <input id="newTitle" placeholder="スレッドタイトル">
+    <textarea id="newMessage" rows="4" placeholder="本文"></textarea>
+    <div id="adminOptions" style="display:none;">
+      <label><input type="checkbox" id="newAnnouncement"> 📢告知</label>
+      <label style="margin-left:10px;"><input type="checkbox" id="newPinned"> 📌固定</label>
+    </div>
+    <button id="createBtn" class="primary">スレ立て</button>
+  </div>
+
+  <!-- スレ詳細 -->
+  <div id="threadView" style="display:none;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <button id="backBtn">← 戻る</button>
+      <div id="threadCount" class="small"></div>
+    </div>
+    <h3 id="threadTitle"></h3>
+    <div id="threadMeta" class="small"></div>
+    <div class="notice">💬 このスレでは古い返信は自動的に削除されます（最大50件まで保持）</div>
+    <div id="posts"></div>
+    <div style="margin-top:8px;">
+      <input id="replyName" placeholder="名前（空欄→名無しさん）">
+      <textarea id="replyMsg" rows="3" placeholder="返信内容"></textarea>
+      <button id="replyBtn" class="primary">返信</button>
+      <button id="deleteThreadBtn" style="background:#f88;border-color:#c00;">スレ削除</button>
+    </div>
+  </div>
+</div>
+
+<!-- 管理モーダル -->
+<div id="adminModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); align-items:center; justify-content:center;">
+  <div style="background:#fff; padding:18px; border-radius:8px; width:320px;">
+    <h3>👑 管理者ログイン</h3>
+    <input type="email" id="adminEmail" placeholder="メールアドレス">
+    <input type="password" id="adminPass" placeholder="パスワード">
+    <div style="text-align:right;margin-top:8px;">
+      <button id="adminLoginBtn" class="primary">ログイン</button>
+      <button id="adminCancelBtn">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { getDatabase, ref, push, set, get, onValue, child, remove } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+/* ===== 新しい Firebase 設定 ===== */
+const firebaseConfig = {
+  apiKey: "AIzaSyDvxu40-FMk2RcFRk-GQgismwE0H0vSeQM",
+  authDomain: "ch-7d7a0.firebaseapp.com",
+  databaseURL: "https://ch-7d7a0-default-rtdb.firebaseio.com",
+  projectId: "ch-7d7a0",
+  storageBucket: "ch-7d7a0.firebasestorage.app",
+  messagingSenderId: "13647387226",
+  appId: "1:13647387226:web:dbadf4d6e5356a85c25663",
+  measurementId: "G-VTXPF0SPVD"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+const threadsRef = ref(db, "threads");
+
+const MAX_REPLIES = 50;
+let isAdmin = false;
+let currentThreadId = null;
+
+function fmtTime(ts){ return new Date(ts).toLocaleString(); }
+function now(){ return Date.now(); }
+function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;","\">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));}
+
+/* スレ一覧 */
+onValue(threadsRef, snap => {
+  const data = snap.val() || {};
+  const arr = Object.entries(data).map(([id,t])=>({id,...t}));
+  arr.sort((a,b)=>{
+    const pa=a.pinned?1:0,pb=b.pinned?1:0;
+    if(pa!==pb) return pb-pa;
+    return b.createdAt-a.createdAt;
+  });
+  const div=document.getElementById("threads");
+  div.innerHTML="";
+  arr.forEach(t=>{
+    const replyCount=t.posts?Object.keys(t.posts).length:0;
+    const el=document.createElement("div");
+    el.className="thread"+(t.createdByAdmin?" admin-thread":"")+(t.pinned?" pinned":"");
+    el.innerHTML=`
+      <div>
+        <div class='title'>${t.announcement?"📢 ":""}${escapeHtml(t.title)}</div>
+        <div class='small'>${fmtTime(t.createdAt)} / 返信${replyCount}件</div>
+      </div>
+      <div>
+        <button class="smallBtn" onclick="openThread('${t.id}')">スレッドを開く</button>
+        ${isAdmin?`<button class='smallBtn' onclick="deleteThread('${t.id}')">削除</button>`:""}
+      </div>
+    `;
+    div.appendChild(el);
+  });
+});
+
+/* スレ立て */
+document.getElementById("createBtn").onclick=async()=>{
+  const name=document.getElementById("newName").value.trim()||"名無しさん";
+  const title=document.getElementById("newTitle").value.trim();
+  const msg=document.getElementById("newMessage").value.trim();
+  const ann=document.getElementById("newAnnouncement").checked;
+  const pin=document.getElementById("newPinned").checked;
+  if(!title||!msg)return alert("タイトルと本文を入力してください。");
+  const nowTs=now();
+  const refThread=push(threadsRef);
+  await set(refThread,{
+    title,createdAt:nowTs,
+    announcement:isAdmin&&ann?true:null,
+    pinned:isAdmin&&pin?true:null,
+    createdByAdmin:isAdmin?true:null
+  });
+  await push(child(threadsRef,`${refThread.key}/posts`),{name,message:msg,time:fmtTime(nowTs),createdAt:nowTs,admin:isAdmin});
+  document.getElementById("newTitle").value="";
+  document.getElementById("newMessage").value="";
+  document.getElementById("newAnnouncement").checked=false;
+  document.getElementById("newPinned").checked=false;
+};
+
+/* スレ開く */
+window.openThread=async id=>{
+  currentThreadId=id;
+  document.getElementById("threadList").style.display="none";
+  document.getElementById("threadView").style.display="block";
+  const postsRef=child(threadsRef,`${id}/posts`);
+  onValue(postsRef,snap=>{
+    const postsDiv=document.getElementById("posts");
+    postsDiv.innerHTML="";
+    const val=snap.val()||{};
+    const items=Object.entries(val).map(([k,v])=>({key:k,v})).sort((a,b)=>(a.v.createdAt||0)-(b.v.createdAt||0));
+    items.forEach((item,idx)=>{
+      const p=item.v;
+      const div=document.createElement("div");
+      div.className="post";
+      div.innerHTML=`
+        <div><b>${idx+1}:</b> <span class="${p.admin?"adminName":""}">${escapeHtml(p.name)}</span> 
+        ${p.admin?"<span style='color:#a00;'>◆管理人</span>":""}<br>${escapeHtml(p.message)}<div class='small'>${p.time}</div></div>
+        ${isAdmin?`<button class='smallBtn' onclick="deleteReply('${item.key}')">削除</button>`:""}
+      `;
+      postsDiv.appendChild(div);
+    });
+  });
+};
+
+/* 返信 */
+document.getElementById("replyBtn").onclick=async()=>{
+  const msg=document.getElementById("replyMsg").value.trim();
+  if(!msg)return;
+  const name=document.getElementById("replyName").value.trim()||"名無しさん";
+  const ts=now();
+  const postsRef=child(threadsRef,`${currentThreadId}/posts`);
+  await push(postsRef,{name,message:msg,time:fmtTime(ts),createdAt:ts,admin:isAdmin});
+  document.getElementById("replyMsg").value="";
+};
+
+/* 削除 */
+window.deleteThread=async id=>{
+  if(!confirm("このスレを削除しますか？"))return;
+  await remove(child(threadsRef,id));
+};
+window.deleteReply=async key=>{
+  if(!confirm("この返信を削除しますか？"))return;
+  await remove(child(child(threadsRef,`${currentThreadId}/posts`),key));
+};
+
+/* 管理ログイン */
+const modal=document.getElementById("adminModal");
+document.getElementById("adminLink").onclick=()=>{modal.style.display="flex";};
+document.getElementById("adminCancelBtn").onclick=()=>{modal.style.display="none";};
+document.getElementById("adminLoginBtn").onclick=async()=>{
+  const email=document.getElementById("adminEmail").value.trim();
+  const pw=document.getElementById("adminPass").value.trim();
+  try{await signInWithEmailAndPassword(auth,email,pw);alert("管理者としてログインしました。");modal.style.display="none";}catch(e){alert("ログインに失敗しました。");}
+};
+document.getElementById("adminLogoutBtn").onclick=async()=>{await signOut(auth);alert("ログアウトしました。");};
+onAuthStateChanged(auth,user=>{
+  isAdmin=!!user;
+  document.getElementById("adminPanel").style.display=isAdmin?"block":"none";
+  document.getElementById("adminLink").style.display=isAdmin?"none":"inline-block";
+  document.getElementById("adminOptions").style.display=isAdmin?"block":"none";
+});
+
+/* 古いスレ削除ボタン */
+document.getElementById("purgeBtn").onclick=async()=>{
+  if(!confirm("古いスレッドを削除しますか？"))return;
+  const snap=await get(threadsRef);
+  const nowTs=now();
+  snap.forEach(childSnap=>{
+    const t=childSnap.val();
+    if(!t.createdByAdmin && nowTs-t.createdAt>7*24*60*60*1000){remove(child(threadsRef,childSnap.key));}
+  });
+  alert("削除しました。");
+};
+
+document.getElementById("backBtn").onclick=()=>{
+  document.getElementById("threadView").style.display="none";
+  document.getElementById("threadList").style.display="block";
+};
+</script>
+</body>
+</html>
